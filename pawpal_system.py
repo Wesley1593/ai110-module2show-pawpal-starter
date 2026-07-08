@@ -17,18 +17,47 @@ class Task:
     completed: bool = False
     priority: int = 1
 
-    def mark_complete(self) -> None:
-        """Mark task as completed."""
+    def mark_complete(self):
+        """Mark task as completed and create recurring task if needed."""
+
         self.completed = True
 
-    def update_task(self, description=None, time=None, frequency=None, priority=None):
+        if self.frequency in ["Daily", "Weekly"]:
+            return self.create_next_occurrence()
+
+        return None
+
+    def create_next_occurrence(self):
+        """Create the next version of a recurring task."""
+
+        if self.frequency in ["Daily", "Weekly"]:
+            return Task(
+                description=self.description,
+                time=self.time,
+                frequency=self.frequency,
+                priority=self.priority
+            )
+
+        return None
+
+    def update_task(
+        self,
+        description=None,
+        time=None,
+        frequency=None,
+        priority=None
+    ):
         """Update task information."""
+
         if description:
             self.description = description
+
         if time:
             self.time = time
+
         if frequency:
             self.frequency = frequency
+
         if priority:
             self.priority = priority
 
@@ -45,10 +74,12 @@ class Pet:
 
     def add_task(self, task: Task) -> None:
         """Add a task to this pet."""
+
         self.tasks.append(task)
 
     def get_tasks(self) -> list[Task]:
         """Return all tasks for this pet."""
+
         return self.tasks
 
 
@@ -63,10 +94,12 @@ class Owner:
 
     def add_pet(self, pet: Pet) -> None:
         """Add a pet to the owner's list."""
+
         self.pets.append(pet)
 
     def get_all_tasks(self) -> list[Task]:
         """Collect tasks from all owned pets."""
+
         all_tasks = []
 
         for pet in self.pets:
@@ -79,59 +112,115 @@ class Scheduler:
     """Creates and manages daily pet care schedules."""
 
     def __init__(self, owner: Owner):
-        """Initialize the scheduler with an owner."""
+        """Initialize scheduler with owner."""
+
         self.owner = owner
         self.daily_schedule = []
 
     def get_available_tasks(self) -> list[Task]:
-        """Retrieve tasks from the owner's pets."""
+        """Retrieve tasks from owner's pets."""
+
         return self.owner.get_all_tasks()
 
     def sort_tasks_by_priority(self, tasks: list[Task]) -> list[Task]:
         """Sort tasks by priority."""
-        return sorted(tasks, key=lambda task: task.priority)
+
+        return sorted(
+            tasks,
+            key=lambda task: task.priority
+        )
+
+    def sort_by_time(self, tasks: list[Task]) -> list[Task]:
+        """Sort tasks by scheduled time."""
+
+        return sorted(
+            tasks,
+            key=lambda task: task.time
+        )
+
+    def filter_completed_tasks(self, tasks: list[Task]) -> list[Task]:
+        """Remove completed tasks."""
+
+        return [
+            task
+            for task in tasks
+            if not task.completed
+        ]
+
+    def detect_conflicts(self, tasks: list[Task]) -> list[str]:
+        """Detect tasks scheduled at the same time."""
+
+        conflicts = []
+
+        for i in range(len(tasks)):
+            for j in range(i + 1, len(tasks)):
+
+                if tasks[i].time == tasks[j].time:
+
+                    conflicts.append(
+                        f"Conflict: {tasks[i].description} and "
+                        f"{tasks[j].description} are both scheduled at "
+                        f"{tasks[i].time}"
+                    )
+
+        return conflicts
 
     def generate_schedule(self) -> list[Task]:
-        """Generate a daily schedule based on available time."""
+        """Generate daily schedule based on priority and time."""
 
         tasks = self.get_available_tasks()
 
         # Remove completed tasks
-        tasks = [
-            task for task in tasks
-            if not task.completed
-        ]
+        tasks = self.filter_completed_tasks(tasks)
 
-        # Sort tasks
+        # Sort by priority
         tasks = self.sort_tasks_by_priority(tasks)
 
-        total_time = 0
         schedule = []
 
+        total_time = 0
+
         for task in tasks:
+
+            # Each task counts as 30 minutes for now
             if total_time + 30 <= self.owner.available_time:
+
                 schedule.append(task)
+
                 total_time += 30
+
+        # Sort final schedule by time
+        schedule = self.sort_by_time(schedule)
 
         self.daily_schedule = schedule
 
         return schedule
-    
+
+
+# Demo test
 if __name__ == "__main__":
 
     walk = Task(
         description="Morning walk",
-        time="8:00 AM",
+        time="09:00",
         frequency="Daily",
         priority=1
     )
 
     feeding = Task(
         description="Feed dog",
-        time="9:00 AM",
+        time="08:00",
         frequency="Daily",
         priority=2
     )
+
+    grooming = Task(
+        description="Brush dog",
+        time="08:00",
+        frequency="Weekly",
+        priority=3
+    )
+
 
     dog = Pet(
         name="Biscuit",
@@ -140,19 +229,38 @@ if __name__ == "__main__":
         age=3
     )
 
+
     dog.add_task(walk)
     dog.add_task(feeding)
+    dog.add_task(grooming)
+
 
     owner = Owner(
         name="Alex",
-        available_time=60
+        available_time=120
     )
 
     owner.add_pet(dog)
 
+
     scheduler = Scheduler(owner)
+
+
+    print("Sorted Schedule:")
 
     plan = scheduler.generate_schedule()
 
     for task in plan:
-        print(task.description)
+        print(
+            task.time,
+            "-",
+            task.description
+        )
+
+
+    print("\nConflicts:")
+
+    conflicts = scheduler.detect_conflicts(plan)
+
+    for conflict in conflicts:
+        print(conflict)
