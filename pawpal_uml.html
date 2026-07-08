@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PawPal+ UML Class Diagram</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; background: #fafafa; color: #222; }
+    h1 { font-size: 1.4rem; }
+    #diagram { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; }
+    button { margin: 0 .4rem .8rem 0; padding: .5rem .9rem; border: 1px solid #bbb;
+             border-radius: 6px; background: #fff; cursor: pointer; }
+    button:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h1>PawPal+ — Initial UML Class Diagram</h1>
+  <button onclick="downloadSVG()">Download SVG</button>
+  <button onclick="downloadPNG()">Download PNG</button>
+
+  <div id="diagram">
+    <pre class="mermaid">
+classDiagram
+    class Owner {
+        +String name
+        +int availableTime
+        +Map preferences
+        +updatePreferences()
+        +setAvailableTime()
+    }
+
+    class Pet {
+        +String name
+        +String species
+        +String breed
+        +int age
+        +updatePetInfo()
+    }
+
+    class Task {
+        +String taskName
+        +String category
+        +int duration
+        +int priority
+        +boolean completedStatus
+        +markComplete()
+        +updateTaskDetails()
+    }
+
+    class Scheduler {
+        +List~Task~ tasks
+        +int availableTime
+        +List~Task~ dailySchedule
+        +addTask()
+        +removeTask()
+        +sortTasksByPriority()
+        +generateSchedule()
+    }
+
+    Owner "1" --> "1..*" Pet : owns
+    Pet "1" --> "0..*" Task : has
+    Scheduler "1" --> "0..*" Task : manages
+    Owner "1" --> "1" Scheduler : uses
+    </pre>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: "default" });
+
+    function getSVG() {
+      const el = document.querySelector("#diagram svg");
+      return el ? new XMLSerializer().serializeToString(el) : null;
+    }
+
+    function downloadSVG() {
+      const svg = getSVG();
+      if (!svg) return alert("Diagram not ready yet.");
+      const blob = new Blob([svg], { type: "image/svg+xml" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "pawpal_uml.svg";
+      a.click();
+    }
+
+    function downloadPNG() {
+      const svgEl = document.querySelector("#diagram svg");
+      if (!svgEl) return alert("Diagram not ready yet.");
+      const svg = new XMLSerializer().serializeToString(svgEl);
+      const img = new Image();
+      const rect = svgEl.getBoundingClientRect();
+      const scale = 2;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = rect.width * scale;
+        canvas.height = rect.height * scale;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.download = "pawpal_uml.png";
+        a.click();
+      };
+      img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
+    }
+  </script>
+</body>
+</html>

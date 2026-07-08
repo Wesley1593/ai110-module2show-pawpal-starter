@@ -79,12 +79,11 @@ class Scheduler:
     """Creates and manages daily pet care schedules."""
 
     def __init__(self, owner: Owner):
-        """Initialize the scheduler with an owner."""
         self.owner = owner
         self.daily_schedule = []
 
     def get_available_tasks(self) -> list[Task]:
-        """Retrieve tasks from the owner's pets."""
+        """Retrieve tasks from owner's pets."""
         return self.owner.get_all_tasks()
 
     def sort_tasks_by_priority(self, tasks: list[Task]) -> list[Task]:
@@ -92,7 +91,7 @@ class Scheduler:
         return sorted(tasks, key=lambda task: task.priority)
 
     def generate_schedule(self) -> list[Task]:
-        """Generate a daily schedule based on available time."""
+        """Create a schedule based on available time."""
 
         tasks = self.get_available_tasks()
 

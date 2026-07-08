@@ -2,15 +2,48 @@
 
 ## 1. System Design
 
-**a. Initial design**
+### Core User Actions
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+The three core actions a user should be able to perform in PawPal+ are:
 
-**b. Design changes**
+1. **Enter owner and pet information**  
+   The user should be able to provide basic information about themselves and their pet so the system can create a personalized care plan.
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+2. **Add and manage pet care tasks**  
+   The user should be able to create tasks such as walks, feeding, medication, grooming, and enrichment. Each task should include information such as duration and priority.
+
+3. **Generate and view a daily schedule**  
+   The user should be able to generate a daily plan that organizes tasks based on available time, priorities, and owner preferences. The system should also explain why tasks were selected.
+
+### a. Initial design
+
+My initial UML design was based on four main classes: Owner, Pet, Task, and Scheduler.
+
+- **Owner**: Stores information about the pet owner, including their name, available time, and scheduling preferences. This information helps the scheduler consider the owner's constraints.
+
+- **Pet**: Stores information about the pet, including name, species, breed, and age. This represents the pet that requires care.
+
+- **Task**: Represents individual pet care activities such as walks, feeding, medication, grooming, or enrichment. It stores information such as task name, category, duration, priority, and completion status.
+
+- **Scheduler**: Handles the scheduling logic by managing tasks, sorting tasks by priority, considering available time, and generating a daily care plan.
+
+The design separates responsibilities between data storage and scheduling logic. Owner, Pet, and Task store information, while Scheduler is responsible for creating and organizing the daily schedule.
+
+### b. Design changes
+
+After reviewing my class skeleton with AI, I identified several improvements that would make the design better match the PawPal+ scenario.
+
+The main changes I would make are:
+
+- Add a relationship between **Owner and Pet** by allowing an owner to store a list of pets. This better represents the real-world scenario where one owner can have multiple pets.
+
+- Add a relationship between **Pet and Task** so each task is connected to the specific pet it belongs to. This prevents confusion when an owner has multiple pets with different care needs.
+
+- Update the **Scheduler** design so it references the owner's information instead of storing a separate copy of available time. This avoids having duplicate data that could become inconsistent.
+
+- Improve task management by considering unique task identifiers and clearer scheduling rules, such as how priorities are ranked and what happens when there is not enough available time.
+
+These changes would make the system easier to expand and would allow the scheduler to create more accurate daily plans.
 
 ---
 
