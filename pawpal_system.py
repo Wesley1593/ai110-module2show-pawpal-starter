@@ -1,82 +1,157 @@
-"""PawPal+ pet care app - backend skeleton.
+"""PawPal+ pet care app - logic layer.
 
-This file contains the backend classes for managing pets,
-tasks, owners, and scheduling logic.
+Contains the core classes:
+Task, Pet, Owner, and Scheduler.
 """
 
 from dataclasses import dataclass, field
 
 
 @dataclass
-class Owner:
-    """Represents a pet owner."""
+class Task:
+    """Represents a single pet care activity."""
 
-    name: str
-    available_time: int
-    preferences: dict = field(default_factory=dict)
+    description: str
+    time: str
+    frequency: str
+    completed: bool = False
+    priority: int = 1
 
-    def update_preferences(self, preferences: dict) -> None:
-        """Update owner's scheduling preferences."""
-        pass
+    def mark_complete(self) -> None:
+        """Mark task as completed."""
+        self.completed = True
 
-    def set_available_time(self, available_time: int) -> None:
-        """Update owner's available time."""
-        pass
+    def update_task(self, description=None, time=None, frequency=None, priority=None):
+        """Update task information."""
+        if description:
+            self.description = description
+        if time:
+            self.time = time
+        if frequency:
+            self.frequency = frequency
+        if priority:
+            self.priority = priority
 
 
 @dataclass
 class Pet:
-    """Represents a pet."""
+    """Stores pet information and their tasks."""
 
     name: str
     species: str
     breed: str
     age: int
+    tasks: list[Task] = field(default_factory=list)
 
-    def update_pet_info(self, **kwargs) -> None:
-        """Update pet information."""
-        pass
+    def add_task(self, task: Task) -> None:
+        """Add a task to this pet."""
+        self.tasks.append(task)
+
+    def get_tasks(self) -> list[Task]:
+        """Return all tasks for this pet."""
+        return self.tasks
 
 
 @dataclass
-class Task:
-    """Represents a pet care task."""
+class Owner:
+    """Stores owner information and manages pets."""
 
-    task_name: str
-    category: str
-    duration: int
-    priority: int
-    completed_status: bool = False
+    name: str
+    available_time: int
+    preferences: dict = field(default_factory=dict)
+    pets: list[Pet] = field(default_factory=list)
 
-    def mark_complete(self) -> None:
-        """Mark a task as completed."""
-        pass
+    def add_pet(self, pet: Pet) -> None:
+        """Add a pet to the owner's list."""
+        self.pets.append(pet)
 
-    def update_task_details(self, **kwargs) -> None:
-        """Update task information."""
-        pass
+    def get_all_tasks(self) -> list[Task]:
+        """Collect tasks from all owned pets."""
+        all_tasks = []
+
+        for pet in self.pets:
+            all_tasks.extend(pet.get_tasks())
+
+        return all_tasks
 
 
 class Scheduler:
-    """Handles creating and organizing pet care schedules."""
+    """Creates and manages daily pet care schedules."""
 
-    def __init__(self, available_time: int):
-        self.tasks: list[Task] = []
-        self.available_time = available_time
-        self.daily_schedule: list[Task] = []
+    def __init__(self, owner: Owner):
+        self.owner = owner
+        self.daily_schedule = []
 
-    def add_task(self, task: Task) -> None:
-        """Add a task to the scheduler."""
-        pass
+    def get_available_tasks(self) -> list[Task]:
+        """Retrieve tasks from owner's pets."""
+        return self.owner.get_all_tasks()
 
-    def remove_task(self, task: Task) -> None:
-        """Remove a task from the scheduler."""
-        pass
-
-    def sort_tasks_by_priority(self) -> None:
-        """Sort tasks based on priority."""
-        pass
+    def sort_tasks_by_priority(self, tasks: list[Task]) -> list[Task]:
+        """Sort tasks by priority."""
+        return sorted(tasks, key=lambda task: task.priority)
 
     def generate_schedule(self) -> list[Task]:
-        """Generate a daily schedule."""
-        pass
+        """Create a schedule based on available time."""
+
+        tasks = self.get_available_tasks()
+
+        # Remove completed tasks
+        tasks = [
+            task for task in tasks
+            if not task.completed
+        ]
+
+        # Sort tasks
+        tasks = self.sort_tasks_by_priority(tasks)
+
+        total_time = 0
+        schedule = []
+
+        for task in tasks:
+            if total_time + 30 <= self.owner.available_time:
+                schedule.append(task)
+                total_time += 30
+
+        self.daily_schedule = schedule
+
+        return schedule
+    
+if __name__ == "__main__":
+
+    walk = Task(
+        description="Morning walk",
+        time="8:00 AM",
+        frequency="Daily",
+        priority=1
+    )
+
+    feeding = Task(
+        description="Feed dog",
+        time="9:00 AM",
+        frequency="Daily",
+        priority=2
+    )
+
+    dog = Pet(
+        name="Biscuit",
+        species="Dog",
+        breed="Golden Retriever",
+        age=3
+    )
+
+    dog.add_task(walk)
+    dog.add_task(feeding)
+
+    owner = Owner(
+        name="Alex",
+        available_time=60
+    )
+
+    owner.add_pet(dog)
+
+    scheduler = Scheduler(owner)
+
+    plan = scheduler.generate_schedule()
+
+    for task in plan:
+        print(task.description)
