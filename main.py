@@ -1,74 +1,142 @@
-from pawpal_system import Task, Pet, Owner, Scheduler
+from pawpal_system import Owner, Pet, Task, Scheduler
 
 
-# Create tasks
-dog_walk = Task(
-    description="Morning walk",
-    time="8:00 AM",
+# Create tasks out of order
+walk = Task(
+    description="Morning Walk",
+    time="09:00",
     frequency="Daily",
     priority=1
 )
 
-dog_food = Task(
-    description="Feed Max",
-    time="9:00 AM",
+feeding = Task(
+    description="Breakfast",
+    time="07:00",
     frequency="Daily",
     priority=2
 )
 
-cat_grooming = Task(
-    description="Brush Luna",
-    time="5:00 PM",
+medicine = Task(
+    description="Give Medicine",
+    time="08:00",
+    frequency="Daily",
+    priority=1
+)
+
+grooming = Task(
+    description="Grooming",
+    time="08:00",
     frequency="Weekly",
     priority=3
 )
 
 
-# Create pets
+# Create pet
 dog = Pet(
-    name="Max",
+    name="Biscuit",
     species="Dog",
     breed="Golden Retriever",
-    age=4
-)
-
-cat = Pet(
-    name="Luna",
-    species="Cat",
-    breed="Siamese",
-    age=2
+    age=3
 )
 
 
-# Add tasks to pets
-dog.add_task(dog_walk)
-dog.add_task(dog_food)
-
-cat.add_task(cat_grooming)
+# Add tasks to pet
+dog.add_task(walk)
+dog.add_task(feeding)
+dog.add_task(medicine)
+dog.add_task(grooming)
 
 
 # Create owner
 owner = Owner(
-    name="Wesley",
+    name="Alex",
     available_time=120
 )
 
 owner.add_pet(dog)
-owner.add_pet(cat)
 
 
 # Create scheduler
 scheduler = Scheduler(owner)
 
+
+# -------------------------------
+# Test Sorting
+# -------------------------------
+
+print("\n--- Sorted Tasks By Time ---")
+
+sorted_tasks = scheduler.sort_by_time(
+    owner.get_all_tasks()
+)
+
+for task in sorted_tasks:
+    print(
+        task.time,
+        "-",
+        task.description
+    )
+
+
+# -------------------------------
+# Test Filtering
+# -------------------------------
+
+print("\n--- Filtering Completed Tasks ---")
+
+feeding.completed = True
+
+active_tasks = scheduler.filter_completed_tasks(
+    owner.get_all_tasks()
+)
+
+for task in active_tasks:
+    print(
+        task.description
+    )
+
+
+# -------------------------------
+# Test Recurring Tasks
+# -------------------------------
+
+print("\n--- Recurring Task Test ---")
+
+new_task = walk.mark_complete()
+
+if new_task:
+    print(
+        "New recurring task:",
+        new_task.description,
+        new_task.frequency
+    )
+
+
+# -------------------------------
+# Test Conflict Detection
+# -------------------------------
+
+print("\n--- Conflict Detection ---")
+
+conflicts = scheduler.detect_conflicts(
+    owner.get_all_tasks()
+)
+
+for conflict in conflicts:
+    print(conflict)
+
+
+# -------------------------------
+# Test Schedule Generation
+# -------------------------------
+
+print("\n--- Generated Schedule ---")
+
 schedule = scheduler.generate_schedule()
-
-
-# Print schedule
-print("Today's Schedule")
-print("----------------")
 
 for task in schedule:
     print(
-        f"{task.time} - {task.description} "
-        f"(Priority: {task.priority})"
+        task.time,
+        "-",
+        task.description
     )
