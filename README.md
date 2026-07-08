@@ -92,3 +92,20 @@ Describe your app in numbered steps so a reader can follow along without watchin
 5. <!-- Add more steps as needed -->
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+
+
+## 🧠 Smarter Scheduling
+
+PawPal+ includes several scheduling improvements:
+
+### Sorting
+The `Scheduler.sort_by_time()` method sorts tasks based on their scheduled time.
+
+### Filtering
+The `Scheduler.filter_completed_tasks()` method removes completed tasks before generating a schedule.
+
+### Recurring Tasks
+The `Task.mark_complete()` method creates a new task occurrence for Daily and Weekly tasks.
+
+### Conflict Detection
+The `Scheduler.detect_conflicts()` method checks for tasks scheduled at the same time and returns warning messages.

@@ -59,6 +59,7 @@ These changes would make the system easier to expand and would allow the schedul
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+My scheduler makes a tradeoff by only detecting conflicts when two tasks have the exact same scheduled time. It does not currently check overlapping durations. This keeps the algorithm simple and easier to understand, but a more advanced scheduler could compare start and end times to detect partial overlaps.
 ---
 
 ## 3. AI Collaboration
